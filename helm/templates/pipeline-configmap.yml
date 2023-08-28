@@ -1,0 +1,16 @@
+{{ $root := . }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: {{ $namespace := print .Values.tenant "-" .Values.environment }}{{ $namespace }}
+  {{- if .Values.overrideName }}
+  name: {{ $namespace }}-mongodb-queries-{{ lower .Values.overrideName }}-configmap
+  {{- else }}
+  name: {{ $namespace }}-mongodb-queries-{{ include "replaceDotsWithDashes" .Values.mongodbCollection }}-configmap
+  {{- end }}
+  labels:
+    chart: "{{ $root.Chart.Name }}-{{ $root.Chart.Version | replace "+" "_" }}"
+    release: {{ $root.Release.Name }}
+    {{- if $root.Values.labels }}{{ toYaml $root.Values.labels | nindent 4 }}{{ end }}
+data:
+  pipeline: "{{ .Values.pipeline }}"

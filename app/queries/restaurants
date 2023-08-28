@@ -1,0 +1,14 @@
+[
+    {
+        '$match': {
+            'borough': 'Brooklyn',
+            'cuisine': 'Chicken'
+        }
+    }, {
+        '$unwind': '$grades'
+    }, {
+        '$sort': {
+            'grades.score': -1
+        }
+    }
+]

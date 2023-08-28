@@ -1,0 +1,45 @@
+tenant: mytenant
+environment: prd
+schedule: "05 04 * * *"
+image_tag: "YOUR_IMAGE_REPO/mongo-query-executor:0.0.1"
+
+secrets:
+    - name: mongodb-credentials # this secret is mandatory to connect to MongoDB
+      values:
+        MongoDbConnectionString: mongodb+srv://YOUR_USER:YOUR_PASSWORD@YOUR_CLUSTER/YOUR_DB?retryWrites=true&w=majority
+    #is possible to define additional secrets files if needed by defining them here:
+    #- name: secret2
+    #  values:
+    #    secret2key1:
+    #    secret2key2:
+    #- name: secret3
+    #  values:
+    #    secret3key1:
+    #    secret3key2:
+
+mongodbCollection: movies
+usePipelineFrom: file #possible values are variable or file
+pipeline: |
+    [
+        {
+            '$unwind': '$genres'
+        }, {
+            '$group': {
+                '_id': '$genres',
+                'count': {
+                    '$sum': 1
+                }
+            }
+        }, {
+            '$sort': {
+                'count': -1
+            }
+        }
+    ]
+
+#####OPTIONAL VALUES######
+#suspend - If set to "true" it stops the execution of the cronjob. Default Value is "false"
+#overrideName - set a custom name to chart and output file: useful fom different queries from the same collection, otherwise the mongodbCollection value is used
+#pipelineFilename - if you want to use a different pipeline file which is already stored inside the image
+#gcpBucketName - the GCP bucket name
+#gcpBucketFolder - The specific subfolder to upload to. It will also create recursively a /tenant/environment folder in it.

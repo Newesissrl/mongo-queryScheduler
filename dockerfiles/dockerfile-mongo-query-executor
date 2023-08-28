@@ -1,0 +1,41 @@
+# Use the official Python base image
+FROM python:3.9
+
+# Install gsutil
+RUN apt-get update && apt-get install -y apt-transport-https ca-certificates curl gnupg
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" \
+    | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+RUN curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+    | apt-key --keyring /usr/share/keyrings/cloud.google.gpg add -
+RUN apt-get update && apt-get install -y google-cloud-sdk
+
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the Python script and requirements file to the container
+COPY ../app ./
+
+# Install the required Python packages
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install MongoDB client
+RUN pip install pymongo
+
+# Set environment variables for MongoDB connection
+
+ENV MONGO_CONNECTION_STRING <mongo_connection_string>
+ENV MONGO_COLLECTION <mongodb_collection>
+ENV USE_PIPELINE_FROM <use_pipeline_from>
+
+#OPTIONAL
+#ENV PIPELINE_QUERY <pipeline_query>
+#ENV PIPELINE_FILENAME <pipeline_filename>
+#ENV OVERRIDE_NAME <override_name>
+#ENV GCP_BUCKET_NAME <bucket_name>
+#ENV GCP_BUCKET_FOLDER <gcp_bucket_folder>
+
+
+
+# Run the Python script
+CMD ["python", "mongo_query.py"]

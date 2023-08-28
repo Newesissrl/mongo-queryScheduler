@@ -1,0 +1,80 @@
+{{ $root := . }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  namespace: {{ $namespace := print .Values.tenant "-" .Values.environment }}{{ $namespace }}
+{{- if .Values.overrideName }}
+  name: {{ $namespace }}-{{ lower .Values.overrideName }}-report
+{{- else }}
+  name: {{ $namespace }}-{{ include "replaceDotsWithDashes" .Values.mongodbCollection }}-report
+  labels:
+    chart: "{{ $root.Chart.Name }}-{{ $root.Chart.Version | replace "+" "_" }}"
+    release: {{ $root.Release.Name }}
+    {{- if $root.Values.labels }}{{ toYaml $root.Values.labels | nindent 4 }}{{ end }}
+{{- end }}
+spec:
+  schedule: {{ .Values.schedule }}
+  {{- if .Values.suspend }}
+  suspend: {{ .Values.suspend }}
+  {{- end }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: mongo-query-scheduler
+              image: "{{ .Values.image_tag }}"
+              command: ["python", "{{ .Values.pythonScript | default "mongo_query.py" }}"]
+              env:
+                - name: MONGO_CONNECTION_STRING
+                  valueFrom:
+                    secretKeyRef:
+                        {{- if .Values.overrideName }}
+                      name: {{ $namespace }}-mongodb-queries-{{ lower .Values.overrideName }}-mongodb-credentials
+                      {{- else }}
+                      name: {{ $namespace }}-mongodb-queries-{{ include "replaceDotsWithDashes" .Values.mongodbCollection }}-mongodb-credentials
+                      {{- end }}
+                      key: MongoDbConnectionString
+                - name: MONGO_COLLECTION
+                  value: {{ .Values.mongodbCollection }}
+                {{- if .Values.overrideName }}
+                - name: OVERRIDE_NAME
+                  value: {{ .Values.overrideName }}
+                {{- end }}
+                - name: PIPELINE_QUERY
+                  valueFrom:
+                    configMapKeyRef:
+                      {{- if .Values.overrideName }}
+                      name: {{ $namespace }}-mongodb-queries-{{ lower .Values.overrideName }}-configmap
+                      {{- else }}
+                      name: {{ $namespace }}-mongodb-queries-{{ include "replaceDotsWithDashes" .Values.mongodbCollection }}-configmap
+                      {{- end }}
+                      key: pipeline.txt
+                - name: USE_PIPELINE_FROM
+                  value: {{ .Values.usePipelineFrom }}
+                {{- if .Values.pipelineFilename }}
+                - name: PIPELINE_FILENAME
+                  value: {{ .Values.pipelineFilename }}
+                {{- end }}
+                {{- if .Values.gcpBucketName }}
+                - name: GCP_BUCKET_NAME
+                  value: {{ .Values.gcpBucketName }}
+                - name: GCP_BUCKET_FOLDER
+                  value: {{ $gcpBucketPath := print .Values.gcpBucketFolder "/" .Values.tenant "/" .Values.environment }} {{ $gcpBucketPath }}
+                {{- end }}
+              volumeMounts:
+                - name: aggregation-pipeline
+                  mountPath: /app/queries/pipeline
+                  subPath: pipeline
+          volumes:
+            - name: aggregation-pipeline
+              configMap:
+                {{- if .Values.overrideName }}
+                name: {{ $namespace }}-mongodb-queries-{{ lower .Values.overrideName }}-configmap
+                {{- else }}
+                name: {{ $namespace }}-mongodb-queries-{{ include "replaceDotsWithDashes" .Values.mongodbCollection }}-configmap
+                {{- end }}
+                items:
+                  - key: pipeline  # Name of the item we had used inside our ConfigMap (under data:)
+                    path: pipeline
+          restartPolicy: OnFailure
