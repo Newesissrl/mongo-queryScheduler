@@ -34,7 +34,7 @@ To start your container you need three basic informations:
 
 then run the following command:
 ```sh
-docker run -e MONGO_CONNECTION_STRING="mongodb+srv://<username>:<password>@cluster0.YOUR_CLUSER.mongodb.net/YOUR_DB?retryWrites=true&w=majority" -e MONGO_COLLECTION="YOUR_COLLECTION" -e USE_PIPELINE_FROM="file"”" mongo-query-executor:0.0.1
+docker run -e MONGO_CONNECTION_STRING="mongodb+srv://<username>:<password>@cluster0.YOUR_CLUSER.mongodb.net/YOUR_DB?retryWrites=true&w=majority" -e MONGO_COLLECTION="YOUR_COLLECTION" -e USE_PIPELINE_FROM="file" mongo-query-executor:0.0.1
 ```
 This will create a local file `/app/result_YOUR_COLLECTION_YY-MM-DD-HH-MM-SS.json` with the number of documents sorted in ascending order.
 
@@ -51,11 +51,11 @@ Other Variable available for Docker execution are
 
 An example for an execution which runs the `movies` pipeline from file on a remote Atlas instance is:
 ```sh
-docker run -e MONGO_COLLECTION="wcm.Stories"  -e MONGO_DB_CONNECTION_STRING="mongodb+srv://test_user:PASSWORD@cluster0.CLUSTER.mongodb.net/sample_mflix?retryWrites=true&w=majority" -e USE_PIPELINE_FROM=“file” -e PIPELINE_FILENAME="movies" mongoquery:0.0.1
+docker run -e MONGO_COLLECTION="wcm.Stories"  -e MONGO_CONNECTION_STRING="mongodb+srv://test_user:PASSWORD@cluster0.CLUSTER.mongodb.net/sample_mflix?retryWrites=true&w=majority" -e USE_PIPELINE_FROM="file" -e PIPELINE_FILENAME="movies" mongoquery:0.0.1
 ```
 An example for an execution which runs the `movies` pipeline from env variable on a remote Atlas instance is:
 ```sh
-docker run -e MONGO_COLLECTION="wcm.Stories"  -e MONGO_DB_CONNECTION_STRING="mongodb+srv://test_user:PASSWORD@cluster0.CLUSTER.mongodb.net/sample_mflix?retryWrites=true&w=majority" -e USE_PIPELINE_FROM=“env” -e PIPELINE_QUERY="[ { '$unwind': '$genres' }, { '$group': { '_id': '$genres', 'count': { '$sum': 1 } } }, { '$sort': { 'count': -1 } } ]" mongoquery:0.0.1
+docker run -e MONGO_COLLECTION="wcm.Stories"  -e MONGO_CONNECTION_STRING="mongodb+srv://test_user:PASSWORD@cluster0.CLUSTER.mongodb.net/sample_mflix?retryWrites=true&w=majority" -e USE_PIPELINE_FROM="env" -e PIPELINE_QUERY="[ { '$group': { '_id': '$_id', 'count': { '$sum': 1 } } }, { '$sort': { 'count': 1 } }, { '$limit': 10 } ]" mongoquery:0.0.1
 ```
 ### For K8S Usage with Helm:
 
