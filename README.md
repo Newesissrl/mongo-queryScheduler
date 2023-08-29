@@ -114,7 +114,7 @@ In addition to that other features are actually under development:
 
 ### Out of Scope
 
-MONGO Scheduler is not intended to migrate and/or sync data between instances, but to ease the extraction of data on regular base. The following specific functionality will therefore not be incorporated:
+MONGO Query Scheduler is not intended to migrate and/or sync data between instances, but to ease the extraction of data on regular base. The following specific functionality will therefore not be incorporated:
 
 * Data Migration between MongoDB instances
 * Data import to MongoDB instances
