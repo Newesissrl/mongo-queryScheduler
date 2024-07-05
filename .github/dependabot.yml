@@ -8,7 +8,7 @@ updates:
   - package-ecosystem: "docker" # See documentation for possible values
     directory: "/dockerfiles" # Location of package manifests
     schedule:
-      interval: "daily"
+      interval: "weekly"
     groups:
       minors:
         update-types:
