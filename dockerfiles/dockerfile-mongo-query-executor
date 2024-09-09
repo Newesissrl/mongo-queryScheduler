@@ -1,5 +1,5 @@
 # Use the official Python base image
-FROM python:3.12
+FROM python:3.12.6
 
 # Install gsutil
 RUN apt-get update && apt-get install -y apt-transport-https ca-certificates curl gnupg
